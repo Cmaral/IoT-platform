@@ -1,5 +1,5 @@
 import serial
-from xbee import XBee, ZigBee
+from xbee import XBee
 
 PORT = '/dev/ttyUSB0'
 BAUDRATE = 115200
