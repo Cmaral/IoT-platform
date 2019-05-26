@@ -11,7 +11,9 @@ xbee = XBee(serial_port,escaped=True)
 
 while True:
     try:
-        print (xbee.wait_read_frame())
+        frame = xbee.wait_read_frame()
+        #xbee.wait_read_frame() returns dictionary 
+        print (frame)
     except KeyboardInterrupt:
         break
 
