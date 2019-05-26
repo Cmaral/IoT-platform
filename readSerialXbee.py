@@ -1,3 +1,5 @@
+# Read frames received on XBee module connected to PORT and print them
+
 import serial
 from xbee import XBee
 
