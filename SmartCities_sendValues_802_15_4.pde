@@ -11,9 +11,9 @@ char WASPMOTE_ID[] = "SensorStation_1";
 // Variables
 uint8_t error;
   
-float ldr_value;
-float humidity_value;
-float temperature_value;
+float ldr_value, ldr_sent;
+float humidity_value, humidity_sent;
+float temperature_value, temperature_sent;
 
 
 void setup()
@@ -24,46 +24,54 @@ void setup()
   // Store Waspmote identifier in EEPROM memory
   frame.setID( WASPMOTE_ID );  
   
+  // Setup variables
+  ldr_sent = 0;
+  humidity_sent = 0;
+  temperature_sent = 0;
+  
   // Setup Smart Cities Board sensors
   SensorCities.setBoardMode(SENS_ON);
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_LDR);
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_HUMIDITY);
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_TEMPERATURE);
-  
-  // Init XBee
-  xbee802.ON();
-  
+    
+    
+   // Turn on XBee
+    xbee802.ON();
 }
 
 
 void loop()
 {
-  // Create new frame
-  frame.createFrame(ASCII);  
-  
-  // Add sensor fields to frame 
+  // Read values
   ldr_value = SensorCities.readValue(SENS_CITIES_LDR);
-  frame.addSensor(SENSOR_LUM, ldr_value);
   humidity_value = SensorCities.readValue(SENS_CITIES_HUMIDITY);
-  frame.addSensor(SENSOR_HUMA, humidity_value);
-  temperature_value = SensorCities.readValue(SENS_CITIES_TEMPERATURE);
-  frame.addSensor(SENSOR_TCA, temperature_value);
-
-  // Send XBee packet
-  error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );   
-  
-  if( error == 0 )
-  {
-    USB.println(F("send ok"));    
+  temperature_value = SensorCities.readValue(SENS_CITIES_TEMPERATURE); 
+  USB.print(ldr_value);  
+  USB.print("---");
+  USB.print(ldr_sent);  
+  USB.print("---");
     
-    // Blink LED
-    Utils.blinkGreenLED();
+  // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
+  if ((abs(humidity_sent - humidity_value) >= 1) or abs((temperature_sent - temperature_value) >= 1) or abs((ldr_sent - ldr_value) >= 1)) {
+    USB.print("send");
+    // Create new frame
+    frame.createFrame(ASCII);    
+    // Add sensor fields to frame 
+    frame.addSensor(SENSOR_LUM, ldr_value);
+    frame.addSensor(SENSOR_HUMA, humidity_value);
+    frame.addSensor(SENSOR_TCA, temperature_value);
     
+    // Send XBee packet
+    xbee802.send( RX_ADDRESS, frame.buffer, frame.length ); 
   }
+     
+  humidity_sent = humidity_value;
+  ldr_sent = ldr_value;
+  temperature_sent = temperature_value;
 
   // Wait 5 seconds
   delay(5000);
 }
-
 
 
