@@ -28,7 +28,10 @@ def main():
     while True:
         try:
             frame = xbee.wait_read_frame()
-            process_frame(frame)                        
+            try:
+                process_frame(frame)  
+            except:
+                pass                      
         except KeyboardInterrupt:
             break
 

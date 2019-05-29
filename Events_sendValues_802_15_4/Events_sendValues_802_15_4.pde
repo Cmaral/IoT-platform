@@ -39,15 +39,14 @@ void loop()
 {
    // Read values
   ldr_value = SensorEventv20.readValue(SENS_SOCKET2, SENS_RESISTIVE);
-  temperature_value = SensorEventv20.readValue(SENS_SOCKET5, SENS_TEMPERATURE);
-  USB.print(ldr_value);  
-  USB.print("---");
-  USB.print(ldr_sent);  
-  USB.print("---");
-    
+  
+  temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
+  temperature_value = (temperature_value - 0.55) * 100; 
+
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if (abs((temperature_sent - temperature_value) >= 1) or abs((ldr_sent - ldr_value) >= 1)) {
+  if ((abs((ldr_value - ldr_sent)) >= 1) or abs((ldr_value - ldr_sent)) >= 1) {
     USB.print("send");
+      USB.print("\n");
     // Create new frame
     frame.createFrame(ASCII);    
     // Add sensor fields to frame 
@@ -55,11 +54,11 @@ void loop()
     frame.addSensor(SENSOR_TCA, temperature_value);
     
     // Send XBee packet
-    xbee802.send( RX_ADDRESS, frame.buffer, frame.length ); 
+    xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
   }
- 
+       
   ldr_sent = ldr_value;
-  temperature_sent = temperature_value;
+  temperature_sent = temperature_value;  
 
   // Wait 5 seconds
   delay(5000);
