@@ -34,10 +34,9 @@ void setup()
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_LDR);
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_HUMIDITY);
   SensorCities.setSensorMode(SENS_ON, SENS_CITIES_TEMPERATURE);
-    
-    
-   // Turn on XBee
-    xbee802.ON();
+        
+  // Turn on XBee
+  xbee802.ON();
 }
 
 
@@ -47,14 +46,10 @@ void loop()
   ldr_value = SensorCities.readValue(SENS_CITIES_LDR);
   humidity_value = SensorCities.readValue(SENS_CITIES_HUMIDITY);
   temperature_value = SensorCities.readValue(SENS_CITIES_TEMPERATURE); 
-  USB.print(ldr_value);  
-  USB.print("---");
-  USB.print(ldr_sent);  
-  USB.print("---");
     
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
   if ((abs(humidity_sent - humidity_value) >= 1) or abs((temperature_sent - temperature_value) >= 1) or abs((ldr_sent - ldr_value) >= 1)) {
-    USB.print("send");
+    USB.print("sent");
     // Create new frame
     frame.createFrame(ASCII);    
     // Add sensor fields to frame 
