@@ -1,3 +1,6 @@
+#TO-DO: Process NodeID, Sensor board type, time and hour, location?
+# -----------------------------------------------------------
+
 # Receives frames from Waspmote boards with Temperature, Humidity and/or Luminosity sensors
 # Communication via Xbee PRO S1 802.15.4
 
