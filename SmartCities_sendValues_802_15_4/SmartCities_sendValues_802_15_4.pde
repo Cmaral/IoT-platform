@@ -46,9 +46,10 @@ void loop()
   ldr_value = SensorCities.readValue(SENS_CITIES_LDR);
   humidity_value = SensorCities.readValue(SENS_CITIES_HUMIDITY);
   temperature_value = SensorCities.readValue(SENS_CITIES_TEMPERATURE); 
+  temperature_value = temperature_value * 0.65;
     
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if ((abs(humidity_sent - humidity_value) >= 1) or abs((temperature_sent - temperature_value) >= 1) or abs((ldr_sent - ldr_value) >= 1)) {
+  if (((abs(ldr_value - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1) or ((abs(humidity_value - humidity_sent)) >= 1)) {
     USB.print("sent");
     // Create new frame
     frame.createFrame(ASCII);    

@@ -40,10 +40,10 @@ void loop()
    // Read values
   ldr_value = SensorEventv20.readValue(SENS_SOCKET2, SENS_RESISTIVE);
   temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
-  temperature_value = (temperature_value - 0.55) * 100; 
+  temperature_value = (temperature_value - 0.63) * 100; 
 
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if ((abs((ldr_value - ldr_sent)) >= 1) or abs((ldr_value - ldr_sent)) >= 1) {    
+  if (((abs(ldr_value - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1)) {    
     
     // Create new frame
     frame.createFrame(ASCII); 

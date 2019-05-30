@@ -7,7 +7,8 @@
 import serial, json, re
 from xbee import XBee
 
-PORT = '/dev/ttyUSB1'
+PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
+print ("Using port", PORT)
 BAUDRATE = 115200
 
 serial_port = serial.Serial(PORT, BAUDRATE)
@@ -29,6 +30,7 @@ def process_frame(frame):
     if (data.find("LUM") != -1):
         LUMI = re.findall(r"\LUM:(.*?)\#",data)[0]
         print("LUMI=",LUMI)
+    print("---")
 
 # Main function
 # Reads frames from serialport PORT
