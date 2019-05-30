@@ -1,4 +1,4 @@
-# Receives frames from Waspmote Smart Cities board with Temperature, Humidity and Luminosity sensors
+# Receives frames from Waspmote boards with Temperature, Humidity and/or Luminosity sensors
 # Communication via Xbee PRO S1 802.15.4
 
 import serial, json, re
