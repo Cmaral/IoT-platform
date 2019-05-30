@@ -6,7 +6,7 @@
 char RX_ADDRESS[] = "0013A200412539CE";
 
 // Waspmote ID
-char WASPMOTE_ID[] = "SensorStation_1";
+char WASPMOTE_ID[] = "SensorStation_2";
 
 // Variables
 uint8_t error;
@@ -53,9 +53,9 @@ void loop()
     frame.addSensor(SENSOR_TCA, temperature_value);
     
     // Send XBee packet
-    xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
+    error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
         
-    USB.print("Packet sent\n");
+    if (error = 0) USB.print("Packet sent\n");
   }
        
   // Reset values     
