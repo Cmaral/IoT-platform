@@ -12,7 +12,6 @@ xbee = XBee(serial_port,escaped=True)
 
 # Function obtains values (Temperature, Humidity, Luminosity) from frame and stores them in JSON file
 def process_frame(frame):
-
     #Decode bytes
     data = frame['rf_data']
     data = data.decode("ISO-8859-1")
@@ -21,14 +20,12 @@ def process_frame(frame):
     if (data.find("TCA") != -1):
         TEMP = re.findall(r"\TCA:(.*?)\#",data)[0]
         print("TEMP=",TEMP)
-    print(data)
     if (data.find("HUMA") != -1):    
         HUMA = re.findall(r"\HUMA:(.*?)\#",data)[0]
         print("HUMA=",HUMA)
     if (data.find("LUM") != -1):
         LUMI = re.findall(r"\LUM:(.*?)\#",data)[0]
         print("LUMI=",LUMI)
-    print(data)
 
 # Main function
 # Reads frames from serialport PORT
