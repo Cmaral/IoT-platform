@@ -34,22 +34,31 @@ void setup()
   xbee802.ON();
 }
 
+float map(long x, long in_min, long in_max, long out_min, long out_max)
+{
+  float value = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  if (value>out_max) return out_max;
+  if (value<out_min) return out_min;
+  else return value;
+}
 
 void loop()
 {
+  
    // Read values
-  ldr_value = SensorEventv20.readValue(SENS_SOCKET2, SENS_RESISTIVE);
+  ldr_value = SensorEventv20.readValue(SENS_SOCKET1, SENS_RESISTIVE);
   temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
-  temperature_value = (temperature_value - 0.63) * 100; 
+  temperature_value = (temperature_value - 0.63) * 100;   
+  float ldr_mapped = map(ldr_value, 15, 0, 0, 100);
 
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if (((abs(ldr_value - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1)) {    
+  if (((abs(ldr_mapped - ldr_sent)) >= 0.5) or ((abs(temperature_value - temperature_sent)) >= 0.5)) {    
     
     // Create new frame
     frame.createFrame(ASCII); 
     
     // Add sensor fields to frame 
-    frame.addSensor(SENSOR_LUM, ldr_value);
+    frame.addSensor(SENSOR_LUM, ldr_mapped);
     frame.addSensor(SENSOR_TCA, temperature_value);
     
     // Send XBee packet
@@ -59,7 +68,7 @@ void loop()
   }
        
   // Reset values     
-  ldr_sent = ldr_value;
+  ldr_sent = ldr_mapped;
   temperature_sent = temperature_value;  
 
   // Wait 5 seconds
