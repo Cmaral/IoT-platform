@@ -59,7 +59,7 @@ void loop()
   
   // Light conversion
   ldr_value = (1.5 * ldr_value * 6250) / 4096;  
-  float ldr_mapped = map(ldr_value, 100, 0, 0, 1600);
+  float ldr_mapped = map(ldr_value, 35, 0, 0, 1600);
 
 
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
@@ -85,4 +85,5 @@ void loop()
   // Wait 5 seconds
   delay(5000);
 }
+
 
