@@ -57,7 +57,10 @@ void loop()
   // Temperature conversion using fixed coefficients
   temperature_value = c1 + c2 * temperature_value;
   
-  float ldr_mapped = map(ldr_value, 15, 0, 0, 100);
+  // Light conversion
+  ldr_value = (1.5 * ldr_value * 6250) / 4096;  
+  float ldr_mapped = map(ldr_value, 100, 0, 0, 1600);
+
 
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
   if (((abs(ldr_mapped - ldr_sent)) >= diff) or ((abs(temperature_value - temperature_sent)) >= diff)) {    
@@ -82,3 +85,4 @@ void loop()
   // Wait 5 seconds
   delay(5000);
 }
+
