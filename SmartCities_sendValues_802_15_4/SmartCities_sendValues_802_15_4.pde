@@ -39,6 +39,14 @@ void setup()
   xbee802.ON();
 }
 
+float map(long x, long in_min, long in_max, long out_min, long out_max)
+{
+  float value = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  if (value>out_max) return out_max;
+  if (value<out_min) return out_min;
+  else return value;
+}
+
 
 void loop()
 {
@@ -46,15 +54,17 @@ void loop()
   ldr_value = SensorCities.readValue(SENS_CITIES_LDR);
   humidity_value = SensorCities.readValue(SENS_CITIES_HUMIDITY);
   temperature_value = SensorCities.readValue(SENS_CITIES_TEMPERATURE); 
-  temperature_value = temperature_value * 0.65;
+  
+  // Map LDR value to new scale
+  float ldr_mapped = map(ldr_value, 0, 100, 0, 1600);
     
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if (((abs(ldr_value - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1) or ((abs(humidity_value - humidity_sent)) >= 1)) {
+  if (((abs(ldr_mapped - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1) or ((abs(humidity_value - humidity_sent)) >= 1)) {
     USB.print("sent");
     // Create new frame
     frame.createFrame(ASCII);    
     // Add sensor fields to frame 
-    frame.addSensor(SENSOR_LUM, ldr_value);
+    frame.addSensor(SENSOR_LUM, ldr_mapped);
     frame.addSensor(SENSOR_HUMA, humidity_value);
     frame.addSensor(SENSOR_TCA, temperature_value);
     
@@ -63,11 +73,10 @@ void loop()
   }
      
   humidity_sent = humidity_value;
-  ldr_sent = ldr_value;
+  ldr_sent = ldr_mapped;
   temperature_sent = temperature_value;
 
   // Wait 5 seconds
   delay(5000);
 }
-
 
