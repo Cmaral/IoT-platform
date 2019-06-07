@@ -14,6 +14,11 @@ uint8_t error;
 float ldr_value, ldr_sent;
 float temperature_value, temperature_sent;
 
+float c1=10;
+float c2=19.5;
+
+float diff=0.5;
+
 
 void setup()
 {
@@ -45,14 +50,17 @@ float map(long x, long in_min, long in_max, long out_min, long out_max)
 void loop()
 {
   
-   // Read values
-  ldr_value = SensorEventv20.readValue(SENS_SOCKET1, SENS_RESISTIVE);
+   // Read raw sensor values
+  ldr_value = SensorEventv20.readValue(SENS_SOCKET1, SENS_RESISTIVE);  
   temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
-  temperature_value = (temperature_value - 0.63) * 100;   
+  
+  // Temperature conversion using fixed coefficients
+  temperature_value = c1 + c2 * temperature_value;
+  
   float ldr_mapped = map(ldr_value, 15, 0, 0, 100);
 
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if (((abs(ldr_mapped - ldr_sent)) >= 0.5) or ((abs(temperature_value - temperature_sent)) >= 0.5)) {    
+  if (((abs(ldr_mapped - ldr_sent)) >= diff) or ((abs(temperature_value - temperature_sent)) >= diff)) {    
     
     // Create new frame
     frame.createFrame(ASCII); 
@@ -74,5 +82,3 @@ void loop()
   // Wait 5 seconds
   delay(5000);
 }
-
-
