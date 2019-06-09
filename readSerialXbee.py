@@ -1,18 +1,37 @@
-#TO-DO: Process NodeID, Sensor board type, time and hour, location?
-# -----------------------------------------------------------
-
-# Receives frames from Waspmote boards with Temperature, Humidity and/or Luminosity sensors
+# Receives frames from Waspmote boards with Temperature, Humidity and/or Luminosity sensors and
+# inserts them into a database
 # Communication via Xbee PRO S1 802.15.4
 
-import serial, json, re
+import serial, json, re, mysql.connector, time
 from xbee import XBee
 
 PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
 print ("Using port", PORT)
 BAUDRATE = 115200
-
+NODEID = "SensorStation1"
 serial_port = serial.Serial(PORT, BAUDRATE)
 xbee = XBee(serial_port,escaped=True)
+
+# --------- #
+
+def insert_values(TEMP, LUMI):
+    mydb = mysql.connector.connect(
+        host="sensordb.cy5t8ba5c4ju.us-west-2.rds.amazonaws.com",
+        user="",
+        passwd="",
+        database="sensordb"
+    )
+    cursor = mydb.cursor()
+    now = time.strftime(r"%Y.%m.%d %H:%M:%S", time.localtime())
+    print(now)
+    sql_query = "INSERT INTO waspmote (nodeid, time, temperature, light) VALUES (%s, %s, %s, %s)"
+    val = (NODEID, now, TEMP, LUMI)
+    cursor.execute(sql_query, val)
+
+    mydb.commit()
+
+    print(cursor.rowcount, "record inserted.")
+
 
 # Function obtains values (Temperature, Humidity, Luminosity) from frame and stores them in JSON file
 def process_frame(frame):
@@ -32,6 +51,9 @@ def process_frame(frame):
         print("LUMI=",LUMI)
     print("---")
 
+    insert_values(TEMP,LUMI)
+
+
 # Main function
 # Reads frames from serialport PORT
 def main():
@@ -39,9 +61,9 @@ def main():
         try:
             frame = xbee.wait_read_frame()
             try:
-                process_frame(frame)      
+                process_frame(frame) 
             except:
-                pass              
+                pass            
         except KeyboardInterrupt:
             break
 
