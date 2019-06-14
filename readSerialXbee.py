@@ -5,16 +5,17 @@
 import serial, json, re, mysql.connector, time
 from xbee import XBee
 
-PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
+#PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
+PORT = '/dev/ttyUSB0'
 print ("Using port", PORT)
 BAUDRATE = 115200
-NODEID = "SensorStation1"
+NODEID = "SensorStation2"
 serial_port = serial.Serial(PORT, BAUDRATE)
 xbee = XBee(serial_port,escaped=True)
 
 # --------- #
 
-def insert_values(TEMP, LUMI):
+def insert_values(TEMP, LUMI, PIR):
     mydb = mysql.connector.connect(
         host="sensordb.cy5t8ba5c4ju.us-west-2.rds.amazonaws.com",
         user="",
@@ -24,8 +25,8 @@ def insert_values(TEMP, LUMI):
     cursor = mydb.cursor()
     now = time.strftime(r"%Y.%m.%d %H:%M:%S", time.localtime())
     print(now)
-    sql_query = "INSERT INTO waspmote (nodeid, time, temperature, light) VALUES (%s, %s, %s, %s)"
-    val = (NODEID, now, TEMP, LUMI)
+    sql_query = "INSERT INTO waspmote (nodeid, time, temperature, light, presence) VALUES (%s, %s, %s, %s, %s)"
+    val = (NODEID, now, TEMP, LUMI, PIR)
     cursor.execute(sql_query, val)
 
     mydb.commit()
@@ -49,9 +50,14 @@ def process_frame(frame):
     if (data.find("LUM") != -1):
         LUMI = re.findall(r"\LUM:(.*?)\#",data)[0]
         print("LUMI=",LUMI)
+    if (data.find("PIR") != -1):
+        PIR = re.findall(r"\PIR:(.*?)\#",data)[0]
+        print("PIR=",PIR)
+    else:
+        PIR = '0.0'
     print("---")
 
-    insert_values(TEMP,LUMI)
+    insert_values(TEMP,LUMI,PIR)
 
 
 # Main function
