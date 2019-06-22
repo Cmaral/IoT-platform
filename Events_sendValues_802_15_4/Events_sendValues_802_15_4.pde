@@ -81,7 +81,6 @@ void loop()
 
     // Send XBee packet
     error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
-   }
   }
        
   // Reset values     
