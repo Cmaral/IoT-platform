@@ -25,7 +25,7 @@ def insert_values(TEMP, LUMI, PIR):
     cursor = mydb.cursor()
     now = time.strftime(r"%Y.%m.%d %H:%M:%S", time.localtime())
     print(now)
-    sql_query = "INSERT INTO waspmote (nodeid, time, temperature, light, presence) VALUES (%s, %s, %s, %s, %s)"
+    sql_query = "INSERT INTO data (nodeid, time, temperature, light, presence) VALUES (%s, %s, %s, %s, %s)"
     val = (NODEID, now, TEMP, LUMI, PIR)
     cursor.execute(sql_query, val)
 
