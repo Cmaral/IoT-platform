@@ -4,7 +4,6 @@
 
 // Destination MAC address
 char RX_ADDRESS[] = "0013A200412539CE";
-
 // Waspmote ID
 char WASPMOTE_ID[] = "SensorStation_2";
 
@@ -17,15 +16,11 @@ float presence_value, presence_sent;
 
 float c1=10;
 float c2=19.5;
-
-float diff=0.5;
-
+float diff_ldr=80;
+float diff_temp=1.0;
 
 void setup()
 {
-  // Init USB
-  USB.ON();
-  
   // Store Waspmote identifier in EEPROM memory
   frame.setID( WASPMOTE_ID );  
   
@@ -34,16 +29,10 @@ void setup()
   temperature_sent = 0;
   presence_sent = 0;
   
-  // Setup Events Board sensors
-  SensorEventv20.ON();   
-    
-  // Turn on XBee
-  xbee802.ON();
-  
-  // Configure sensor threshold for each sensor used
-  SensorEventv20.setThreshold(SENS_SOCKET1, 3.3);
-  SensorEventv20.setThreshold(SENS_SOCKET5, 3.3);
-  SensorEventv20.setThreshold(SENS_SOCKET7, 3.3);
+  // Init USB
+  USB.ON();  
+  // Turn on the Events Sensor Board
+  SensorEventv20.ON();
 }
 
 float map(long x, long in_min, long in_max, long out_min, long out_max)
@@ -55,59 +44,44 @@ float map(long x, long in_min, long in_max, long out_min, long out_max)
 }
 
 void loop()
-{
-  // Enable interruptions from the board
-  SensorEventv20.attachInt();
-  
-  // Put the mote to sleep
-  USB.println(F("Enter sleep mode..."));  
-  PWR.sleep(UART0_OFF | UART1_OFF | BAT_OFF | RTC_OFF);
-  USB.println(F("...wake up")); 
-  
-  // Disable interruptions from the board
-  SensorEventv20.detachInt();
-  
-  // Load the interruption register
-  SensorEventv20.loadInt();
+{  
+  // Put the mote to sleep for 10 seconds
+  USB.println(F("Entering sleep mode"));  
+  PWR.deepSleep(“00:00:00:10”, RTC_OFFSET, RTC_ALM1_MODE2, ALL_OFF);
+  USB.ON();
+  USB.println(F("Woke up"));
 
-  // Compare the interruption received with the sensor identifier
-  if ((SensorEventv20.intFlag & SENS_SOCKET1) or (SensorEventv20.intFlag & SENS_SOCKET5) or (SensorEventv20.intFlag & SENS_SOCKET7))
-  {   
-    USB.println(F("---------------------------"));    
-    USB.println(F("Interruption captured"));    
-    USB.println(F("---------------------------"));    
-    RTC.ON();
-    RTC.getTime();
+  RTC.ON();
+  RTC.getTime();
+   
+  // Read raw sensor values
+  ldr_value = SensorEventv20.readValue(SENS_SOCKET1, SENS_RESISTIVE);  
+  temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
+  presence_value = SensorEventv20.readValue(SENS_SOCKET7);    
+  
+  // Temperature conversion using fixed coefficients
+  temperature_value = c1 + c2 * temperature_value;
+  
+  // Light conversion
+  ldr_value = (1.5 * ldr_value * 6250) / 4096;  
+  ldr_mapped = map(ldr_value, 35, 0, 0, 1600);
     
+  // If values are significantly different from the previous ones, send frame
+  if (((abs(ldr_mapped - ldr_sent)) >= diff_ldr) or ((abs(temperature_value - temperature_sent)) >= diff_temp) or (presence_value != presence_sent)) {
     // Turn on XBee
     xbee802.ON();
-    
-    // Read raw sensor values
-    ldr_value = SensorEventv20.readValue(SENS_SOCKET1, SENS_RESISTIVE);  
-    temperature_value = SensorEventv20.readValue(SENS_SOCKET5);
-    presence_value = SensorEventv20.readValue(SENS_SOCKET7);
-    
-  
-    // Temperature conversion using fixed coefficients
-    temperature_value = c1 + c2 * temperature_value;
-  
-    // Light conversion
-    ldr_value = (1.5 * ldr_value * 6250) / 4096;  
-    ldr_mapped = map(ldr_value, 35, 0, 0, 1600);
-     
     // Create new frame
     frame.createFrame(ASCII); 
-    
+
     // Add sensor fields to frame 
     frame.addSensor(SENSOR_LUM, ldr_mapped);
     frame.addSensor(SENSOR_TCA, temperature_value);
     frame.addSensor(SENSOR_PIR, presence_value);
     frame.addSensor(SENSOR_TIME, RTC.hour, RTC.minute, RTC.second );
-    
+
     // Send XBee packet
     error = xbee802.send( RX_ADDRESS, frame.buffer, frame.length );
-
-    if (error = 0) USB.print("Packet sent\n");
+   }
   }
        
   // Reset values     
