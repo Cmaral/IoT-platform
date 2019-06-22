@@ -15,28 +15,21 @@ float ldr_value, ldr_sent;
 float humidity_value, humidity_sent;
 float temperature_value, temperature_sent;
 
+float diff_ldr=80;
+float diff_temp=1.0;
 
 void setup()
-{
-  // Init USB
-  USB.ON();
-  
+{ 
   // Store Waspmote identifier in EEPROM memory
   frame.setID( WASPMOTE_ID );  
+  
+  // Init USB
+  USB.ON();
   
   // Setup variables
   ldr_sent = 0;
   humidity_sent = 0;
   temperature_sent = 0;
-  
-  // Setup Smart Cities Board sensors
-  SensorCities.setBoardMode(SENS_ON);
-  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_LDR);
-  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_HUMIDITY);
-  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_TEMPERATURE);
-        
-  // Turn on XBee
-  xbee802.ON();
 }
 
 float map(long x, long in_min, long in_max, long out_min, long out_max)
@@ -50,6 +43,21 @@ float map(long x, long in_min, long in_max, long out_min, long out_max)
 
 void loop()
 {
+  // Put the mote to sleep for 10 seconds
+  USB.println(F("Entering sleep mode"));  
+  PWR.deepSleep(“00:00:00:10”, RTC_OFFSET, RTC_ALM1_MODE2, SENS_OFF);
+  USB.ON();
+  USB.println(F("Woke up"));
+  
+  RTC.ON();
+  RTC.getTime();
+
+  // Init Smart Cities Board sensors
+  SensorCities.setBoardMode(SENS_ON);
+  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_LDR);
+  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_HUMIDITY);
+  SensorCities.setSensorMode(SENS_ON, SENS_CITIES_TEMPERATURE);
+  
   // Read values
   ldr_value = SensorCities.readValue(SENS_CITIES_LDR);
   humidity_value = SensorCities.readValue(SENS_CITIES_HUMIDITY);
@@ -59,10 +67,13 @@ void loop()
   float ldr_mapped = map(ldr_value, 0, 100, 0, 1600);
     
   // To lower consumption, only send a new packet if any of the values differs enough from the previously sent one.
-  if (((abs(ldr_mapped - ldr_sent)) >= 1) or ((abs(temperature_value - temperature_sent)) >= 1) or ((abs(humidity_value - humidity_sent)) >= 1)) {
-    USB.print("sent");
+  if (((abs(ldr_mapped - ldr_sent)) >= diff_ldr) or ((abs(temperature_value - temperature_sent)) >= diff_temp) or ((abs(humidity_value - humidity_sent)) >= diff_temp)) {
+    // Turn on XBee
+    xbee802.ON();
+    
     // Create new frame
-    frame.createFrame(ASCII);    
+    frame.createFrame(ASCII);  
+    
     // Add sensor fields to frame 
     frame.addSensor(SENSOR_LUM, ldr_mapped);
     frame.addSensor(SENSOR_HUMA, humidity_value);
@@ -75,8 +86,5 @@ void loop()
   humidity_sent = humidity_value;
   ldr_sent = ldr_mapped;
   temperature_sent = temperature_value;
-
-  // Wait 5 seconds
-  delay(5000);
 }
 
