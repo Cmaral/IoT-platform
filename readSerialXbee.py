@@ -17,9 +17,9 @@ xbee = XBee(serial_port,escaped=True)
 
 def insert_values(TEMP, LUMI, PIR):
     mydb = mysql.connector.connect(
-        host="sensordb.cy5t8ba5c4ju.us-west-2.rds.amazonaws.com",
-        user="",
-        passwd="",
+        host="database_url",
+        user="username",
+        passwd="password",
         database="sensordb"
     )
     cursor = mydb.cursor()
