@@ -47,7 +47,7 @@ void loop()
 {  
   // Put the mote to sleep for 10 seconds
   USB.println(F("Entering sleep mode"));  
-  PWR.deepSleep(“00:00:00:10”, RTC_OFFSET, RTC_ALM1_MODE2, ALL_OFF);
+  PWR.deepSleep(“00:00:00:10”, RTC_OFFSET, RTC_ALM1_MODE2, SENS_OFF);
   USB.ON();
   USB.println(F("Woke up"));
 
