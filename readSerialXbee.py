@@ -1,12 +1,11 @@
-# Receives frames from Waspmote boards with Temperature, Humidity and/or Luminosity sensors and
+# Receives frames from Waspmote boards with Temperature, Humidity, Luminosity and/or Presence sensors and
 # inserts them into a database
 # Communication via Xbee PRO S1 802.15.4
 
 import serial, json, re, mysql.connector, time
 from xbee import XBee
 
-#PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
-PORT = '/dev/ttyUSB0'
+PORT = '/dev/ttyUSB' + input("Port (Use 0-4 for ttyUSBX): ")
 print ("Using port", PORT)
 BAUDRATE = 115200
 NODEID = "SensorStation2"
@@ -34,7 +33,7 @@ def insert_values(TEMP, LUMI, PIR):
     print(cursor.rowcount, "record inserted.")
 
 
-# Function obtains values (Temperature, Humidity, Luminosity) from frame and stores them in JSON file
+# Function obtains values (Temperature, Humidity, Luminosity, Presence) from frame
 def process_frame(frame):
     #Decode bytes
     data = frame['rf_data']
